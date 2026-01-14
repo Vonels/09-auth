@@ -1,4 +1,4 @@
-import css from "./ProfileEditPage.module.css";
+import css from "./EditProfilePage.module.css";
 
 <main className={css.mainContent}>
   <div className={css.profileCard}>
