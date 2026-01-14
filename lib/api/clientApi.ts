@@ -8,7 +8,8 @@ interface NoteRes {
 }
 
 type RegisterRequest = {
-  user: User;
+  email: string;
+  password: string;
 };
 
 export type LoginRequest = {
@@ -20,33 +21,31 @@ type CheckSessionRequest = {
   success: boolean;
 };
 
-const url = "https://notehub-public.goit.study/api/notes";
-
 export async function fetchNotes(
   currentPage: number,
   query?: string,
   tag?: string
 ): Promise<NoteRes> {
-  const res = await api.get<NoteRes>(url, {
+  const res = await api.get<NoteRes>("/notes", {
     params: { page: currentPage, perPage: 12, search: query, tag: tag },
   });
   return res.data;
 }
 
 export async function createNote(values: NoteFormValues): Promise<Note> {
-  const res = await api.post<Note>(url, values);
+  const res = await api.post<Note>("/notes", values);
 
   return res.data;
 }
 
 export async function deleteNote(id: string): Promise<Note> {
-  const res = await api.delete<Note>(url + `/${id}`);
+  const res = await api.delete<Note>("/notes" + `/${id}`);
 
   return res.data;
 }
 
 export async function fetchNoteById(id: string): Promise<Note> {
-  const res = await api.get<Note>(url + `/${id}`);
+  const res = await api.get<Note>("/notes" + `/${id}`);
 
   return res.data;
 }

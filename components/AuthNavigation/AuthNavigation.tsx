@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import css from "./AuthNavigation.module.css";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -17,28 +17,53 @@ export default function AuthNavigation() {
 
   return (
     <div>
-      <li className={css.navigationItem}>
-        <Link href="/profile" prefetch={false} className={css.navigationLink}>
-          Profile
-        </Link>
-      </li>
+      {isAuthenticated ? (
+        <>
+          <li className={css.navigationItem}>
+            <Link
+              href="/profile"
+              prefetch={false}
+              className={css.navigationLink}
+            >
+              Profile
+            </Link>
+          </li>
 
-      <li className={css.navigationItem}>
-        <p className={css.userEmail}>User email</p>
-        <button className={css.logoutButton}>Logout</button>
-      </li>
+          <li className={css.navigationItem}>
+            <p className={css.userEmail}>{user?.email}</p>
 
-      <li className={css.navigationItem}>
-        <Link href="/sign-in" prefetch={false} className={css.navigationLink}>
-          Login
-        </Link>
-      </li>
+            <button
+              type="button"
+              className={css.logoutButton}
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </li>
+        </>
+      ) : (
+        <>
+          <li className={css.navigationItem}>
+            <Link
+              href="/sign-in"
+              prefetch={false}
+              className={css.navigationLink}
+            >
+              Login
+            </Link>
+          </li>
 
-      <li className={css.navigationItem}>
-        <Link href="/sign-up" prefetch={false} className={css.navigationLink}>
-          Sign up
-        </Link>
-      </li>
+          <li className={css.navigationItem}>
+            <Link
+              href="/sign-up"
+              prefetch={false}
+              className={css.navigationLink}
+            >
+              Sign up
+            </Link>
+          </li>
+        </>
+      )}
     </div>
   );
 }
