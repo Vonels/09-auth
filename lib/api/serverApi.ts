@@ -4,15 +4,15 @@ import type { Note } from "@/types/note";
 import { cookies } from "next/headers";
 
 const baseURL = "https://notehub-public.goit.study/api";
+const TOKEN_COOKIE = "NoteHub";
 
-const getServerApi = () => {
-  const cookieStore = cookies();
-  const cookieString = cookieStore.toString();
+export const getServerApi = async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(TOKEN_COOKIE)?.value;
+
   return axios.create({
     baseURL,
-    headers: {
-      Cookie: cookieString,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 };
 
@@ -30,7 +30,7 @@ export async function fetchNotes(
   query?: string,
   tag?: string
 ): Promise<NoteRes> {
-  const api = getServerApi();
+  const api = await getServerApi();
   const res = await api.get<NoteRes>("/notes", {
     params: { page: currentPage, perPage: 12, search: query, tag: tag },
   });
@@ -38,20 +38,20 @@ export async function fetchNotes(
 }
 
 export async function fetchNoteById(id: string): Promise<Note> {
-  const api = getServerApi();
+  const api = await getServerApi();
   const res = await api.get<Note>("/notes" + `/${id}`);
 
   return res.data;
 }
 
 export const getMe = async () => {
-  const api = getServerApi();
+  const api = await getServerApi();
   const { data } = await api.get<User>("/auth/me");
   return data;
 };
 
 export const checkSession = async () => {
-  const api = getServerApi();
+  const api = await getServerApi();
   const res = await api.get<CheckSessionRequest>("/auth/session");
   return res.data.success;
 };
