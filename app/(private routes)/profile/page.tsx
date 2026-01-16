@@ -1,4 +1,5 @@
 import css from "./ProfilePage.module.css";
+import { getMe } from "@/lib/api/serverApi";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default function ProfilePage() {
+  const user = getMe();
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
@@ -24,13 +26,15 @@ export default function ProfilePage() {
           </Link>
         </div>
         <div className={css.avatarWrapper}>
-          <Image
-            src="Avatar"
-            alt="User Avatar"
-            width={120}
-            height={120}
-            className={css.avatar}
-          />
+          {user.avatar && (
+            <Image
+              src={user.avatar}
+              alt="User Avatar"
+              width={120}
+              height={120}
+              className={css.avatar}
+            />
+          )}
         </div>
         <div className={css.profileInfo}>
           <p>Username: your_username</p>

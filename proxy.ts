@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const PUBLIC_ROUTES = ["/sign-in", "/sign-up"];
 const PRIVATE_PREFIXES = ["/profile", "/notes"];
 
-const TOKEN_COOKIE = "NoteHub";
+const TOKEN_COOKIE = "accessToken";
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

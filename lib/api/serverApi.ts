@@ -4,7 +4,7 @@ import type { Note } from "@/types/note";
 import { cookies } from "next/headers";
 
 const baseURL = "https://notehub-public.goit.study/api";
-const TOKEN_COOKIE = "NoteHub";
+const TOKEN_COOKIE = "accessToken";
 
 export const getServerApi = async () => {
   const cookieStore = await cookies();
@@ -46,8 +46,8 @@ export async function fetchNoteById(id: string): Promise<Note> {
 
 export const getMe = async () => {
   const api = await getServerApi();
-  const { data } = await api.get<User>("/auth/me");
-  return data;
+  const res = await api.get<User>("/users/me");
+  return res.data;
 };
 
 export const checkSession = async () => {
