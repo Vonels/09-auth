@@ -21,10 +21,14 @@ type CheckSessionRequest = {
   success: boolean;
 };
 
+export type UpdateMeRequest = {
+  username: string;
+};
+
 export async function fetchNotes(
   currentPage: number,
   query?: string,
-  tag?: string
+  tag?: string,
 ): Promise<NoteRes> {
   const res = await api.get<NoteRes>("/notes", {
     params: { page: currentPage, perPage: 12, search: query, tag: tag },
@@ -66,10 +70,15 @@ export const checkSession = async () => {
 };
 
 export const getMe = async () => {
-  const { data } = await api.get<User>("/auth/me");
+  const { data } = await api.get<User>("/users/me");
   return data;
 };
 
 export const logout = async (): Promise<void> => {
   await api.post("/auth/logout");
+};
+
+export const updateMe = async (data: UpdateMeRequest) => {
+  const res = await api.patch<User>("/users/me", data);
+  return res.data;
 };

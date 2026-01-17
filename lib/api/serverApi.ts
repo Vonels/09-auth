@@ -28,7 +28,7 @@ type CheckSessionRequest = {
 export async function fetchNotes(
   currentPage: number,
   query?: string,
-  tag?: string
+  tag?: string,
 ): Promise<NoteRes> {
   const api = await getServerApi();
   const res = await api.get<NoteRes>("/notes", {

@@ -1,13 +1,13 @@
 "use client";
 
-import { ReactNode, useEffect, useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { ReactNode, useMemo } from "react";
+import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
 type Props = { children: ReactNode };
 
 const PRIVATE_PREFIXES = ["/profile", "/notes"];
-const PUBLIC_ONLY_PREFIXES = ["/sign-in", "/sign-up"]; // ✅ под твои роуты
+const PUBLIC_ONLY_PREFIXES = ["/sign-in", "/sign-up"];
 
 function startsWithAny(path: string, prefixes: string[]) {
   return prefixes.some((p) => path === p || path.startsWith(p + "/"));
@@ -19,79 +19,36 @@ type SessionResponse = {
 };
 
 async function fetchSession(): Promise<SessionResponse> {
-  const res = await fetch("/api/auth/session", { credentials: "include" });
+  const res = await fetch("/api/auth/session", {
+    credentials: "include",
+    cache: "no-store",
+  });
 
-  // если 401/403 — просто считаем, что сессии нет (не кидаем ошибку)
   if (res.status === 401 || res.status === 403) {
     return { success: false, user: null };
   }
-
-  if (!res.ok) {
-    // оставим ошибку только на реально плохие случаи
-    throw new Error("Session request failed");
-  }
+  if (!res.ok) return { success: false, user: null };
 
   return res.json();
 }
 
-async function logoutRequest() {
-  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-}
-
 export default function AuthProvider({ children }: Props) {
   const pathname = usePathname();
-  const router = useRouter();
 
-  const isPrivate = useMemo(
-    () => startsWithAny(pathname, PRIVATE_PREFIXES),
-    [pathname]
-  );
-  const isPublicOnly = useMemo(
-    () => startsWithAny(pathname, PUBLIC_ONLY_PREFIXES),
-    [pathname]
-  );
+  const shouldCheck = useMemo(() => {
+    const isPrivate = startsWithAny(pathname, PRIVATE_PREFIXES);
+    const isPublicOnly = startsWithAny(pathname, PUBLIC_ONLY_PREFIXES);
+    return isPrivate || isPublicOnly;
+  }, [pathname]);
 
-  const {
-    data: session,
-    isLoading,
-    isFetching,
-    refetch,
-  } = useQuery({
+  // только проверяем сессию (для UI), но НЕ редиректим
+  useQuery({
     queryKey: ["session"],
     queryFn: fetchSession,
     retry: false,
     refetchOnWindowFocus: false,
-    enabled: isPrivate || isPublicOnly,
+    enabled: shouldCheck,
   });
-
-  const logoutMutation = useMutation({
-    mutationFn: logoutRequest,
-  });
-
-  const authed = !!session?.success;
-
-  useEffect(() => {
-    if (isPrivate) refetch();
-  }, [isPrivate, pathname, refetch]);
-
-  useEffect(() => {
-    if (!isLoading && !isFetching && isPrivate && !authed) {
-      logoutMutation.mutate();
-      router.replace("/sign-in");
-    }
-  }, [isLoading, isFetching, isPrivate, authed, router, logoutMutation]);
-
-  useEffect(() => {
-    if (!isLoading && !isFetching && isPublicOnly && authed) {
-      router.replace("/profile");
-    }
-  }, [isLoading, isFetching, isPublicOnly, authed, router]);
-
-  if ((isPrivate || isPublicOnly) && (isLoading || isFetching)) {
-    return <div style={{ padding: 24 }}>Loading...</div>;
-  }
-
-  if (isPrivate && !authed) return null;
 
   return <>{children}</>;
 }
