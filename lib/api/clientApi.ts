@@ -70,8 +70,8 @@ export const checkSession = async () => {
 };
 
 export const getMe = async () => {
-  const { data } = await api.get<User>("/users/me");
-  return data;
+  const res = await api.get<User>("/users/me");
+  return res.data;
 };
 
 export const logout = async (): Promise<void> => {

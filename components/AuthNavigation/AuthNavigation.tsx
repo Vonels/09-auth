@@ -40,7 +40,8 @@ export default function AuthNavigation() {
     mutationFn: logoutRequest,
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["session"] });
-      router.push("/sign-in");
+      await qc.invalidateQueries({ queryKey: ["me"] });
+      router.replace("/home");
     },
   });
 
@@ -59,7 +60,7 @@ export default function AuthNavigation() {
           </li>
 
           <li className={css.navigationItem}>
-            <p className={css.userEmail}>{session?.user?.email}</p>
+            <p className={css.userEmail}>{session?.user?.email ?? "—"}</p>
             <button
               type="button"
               className={css.logoutButton}

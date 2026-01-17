@@ -22,7 +22,7 @@ export default function EditProfilePage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: updateMe, // <-- сюда прилетит объект { username }
+    mutationFn: updateMe,
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["me"] });
       router.push("/profile");
@@ -36,7 +36,7 @@ export default function EditProfilePage() {
     e.preventDefault();
 
     const username = usernameRef.current?.value.trim() ?? "";
-    if (!username) return; // можно показать ошибку, но хотя бы не шлём пустоту
+    if (!username) return;
 
     updateMutation.mutate({ username });
   };
@@ -45,17 +45,13 @@ export default function EditProfilePage() {
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
-
-        {user.avatarUrl ? (
-          <Image
-            src={user.avatarUrl}
-            alt="User Avatar"
-            width={120}
-            height={120}
-            className={css.avatar}
-          />
-        ) : null}
-
+        <Image
+          src={user.avatarUrl}
+          alt="User Avatar"
+          width={120}
+          height={120}
+          className={css.avatar}
+        />
         <form className={css.profileInfo} onSubmit={handleSubmit}>
           <div className={css.usernameWrapper}>
             <label htmlFor="username">Username:</label>
