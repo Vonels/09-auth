@@ -12,7 +12,7 @@ const getServerApi = async () => {
     },
   };
 };
-// d
+
 interface NoteRes {
   notes: Note[];
   totalPages: number;
