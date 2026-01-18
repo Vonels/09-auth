@@ -16,7 +16,7 @@ const roboto = Roboto({
 const APP_NAME = "NoteHub";
 const APP_URL = "http://localhost:3000";
 const OG_IMAGE = "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
-
+//
 export const metadata: Metadata = {
   title: APP_NAME,
   description: "NoteHub — сервіс нотаток.",
