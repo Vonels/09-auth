@@ -9,7 +9,7 @@ import NotesClient from "./Notes.client";
 import type { Metadata } from "next";
 
 const APP_NAME = "NoteHub";
-const APP_URL = "https://YOUR-DOMAIN.com";
+const APP_URL = "http://localhost:3000";
 const OG_IMAGE = "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
 
 type PageProps = {
