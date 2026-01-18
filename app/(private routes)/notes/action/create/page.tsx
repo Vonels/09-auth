@@ -3,7 +3,7 @@ import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./CreateNote.module.css";
 
 const APP_NAME = "NoteHub";
-const APP_URL = "http://localhost:3000";
+const APP_URL = "https://09-auth-mauve-omega.vercel.app/";
 const OG_IMAGE = "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
 
 export const metadata: Metadata = {
