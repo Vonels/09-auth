@@ -1,5 +1,5 @@
 "use client";
-
+import { getMe } from "@/lib/api/clientApi";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -41,13 +41,19 @@ export default function AuthNavigation() {
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["session"] });
       await qc.invalidateQueries({ queryKey: ["me"] });
-      router.replace("/home");
+      router.replace("/sign-in");
     },
+  });
+
+  const { data: me } = useQuery({
+    queryKey: ["me"],
+    queryFn: getMe,
   });
 
   if (isLoading) return null;
 
   const authed = Boolean(session?.success);
+  console.log("SESSION:", session);
 
   return (
     <ul className={css.navigationList}>
@@ -60,7 +66,7 @@ export default function AuthNavigation() {
           </li>
 
           <li className={css.navigationItem}>
-            <p className={css.userEmail}>{session?.user?.email ?? "—"}</p>
+            <p className={css.userEmail}>{me?.username ?? me?.email}</p>
             <button
               type="button"
               className={css.logoutButton}

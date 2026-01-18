@@ -1,19 +1,16 @@
-import axios from "axios";
 import type { User } from "../../types/user";
 import type { Note } from "@/types/note";
 import { cookies } from "next/headers";
+import { api } from "./api";
 
-const baseURL = "https://notehub-public.goit.study/api";
-const TOKEN_COOKIE = "accessToken";
-
-export const getServerApi = async () => {
+const getServerApi = async () => {
   const cookieStore = await cookies();
-  const token = cookieStore.get(TOKEN_COOKIE)?.value;
-
-  return axios.create({
-    baseURL,
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  const cookieString = cookieStore.toString();
+  return {
+    headers: {
+      cookie: cookieString,
+    },
+  };
 };
 
 interface NoteRes {
@@ -23,6 +20,7 @@ interface NoteRes {
 
 type CheckSessionRequest = {
   success: boolean;
+  user?: User | null;
 };
 
 export async function fetchNotes(
@@ -30,28 +28,29 @@ export async function fetchNotes(
   query?: string,
   tag?: string,
 ): Promise<NoteRes> {
-  const api = await getServerApi();
+  const serverApi = await getServerApi();
   const res = await api.get<NoteRes>("/notes", {
+    ...serverApi,
     params: { page: currentPage, perPage: 12, search: query, tag: tag },
   });
   return res.data;
 }
 
 export async function fetchNoteById(id: string): Promise<Note> {
-  const api = await getServerApi();
-  const res = await api.get<Note>("/notes" + `/${id}`);
+  const serverApi = await getServerApi();
+  const res = await api.get<Note>("/notes" + `/${id}`, serverApi);
 
   return res.data;
 }
 
 export const getMe = async () => {
-  const api = await getServerApi();
-  const res = await api.get<User>("/users/me");
+  const serverApi = await getServerApi();
+  const res = await api.get<User>("/users/me", serverApi);
   return res.data;
 };
 
 export const checkSession = async () => {
-  const api = await getServerApi();
-  const res = await api.get<CheckSessionRequest>("/auth/session");
+  const serverApi = await getServerApi();
+  const res = await api.get<CheckSessionRequest>("/auth/session", serverApi);
   return res.data.success;
 };

@@ -1,19 +1,16 @@
-"use client";
-
 import css from "./ProfilePage.module.css";
-import { getMe } from "@/lib/api/clientApi";
-import { useQuery } from "@tanstack/react-query";
+import { getMe } from "@/lib/api/serverApi";
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 
-export default function ProfilePage() {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["me"],
-    queryFn: getMe,
-  });
+export const metadata: Metadata = {
+  title: "Profile | NoteHub",
+  description: "User profile page",
+};
 
-  if (isLoading) return <p>Loading...</p>;
-  if (!user) return null;
+export default async function ProfilePage() {
+  const user = await getMe();
 
   return (
     <main className={css.mainContent}>
@@ -26,7 +23,7 @@ export default function ProfilePage() {
         </div>
         <div className={css.avatarWrapper}>
           <Image
-            src={user.avatarUrl}
+            src={"https://ac.goit.global/fullstack/react/default-avatar.jpg"}
             alt="User Avatar"
             width={120}
             height={120}
