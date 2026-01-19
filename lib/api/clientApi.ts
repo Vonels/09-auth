@@ -19,6 +19,8 @@ export type LoginRequest = {
 
 type CheckSessionRequest = {
   success: boolean;
+  accessToken?: string;
+  refreshToken?: string;
 };
 
 export type UpdateMeRequest = {

@@ -18,11 +18,6 @@ interface NoteRes {
   totalPages: number;
 }
 
-type CheckSessionRequest = {
-  success: boolean;
-  user?: User | null;
-};
-
 export async function fetchNotes(
   currentPage: number,
   query?: string,
@@ -49,8 +44,11 @@ export const getMe = async () => {
   return res.data;
 };
 
-export const checkSession = async () => {
-  const serverApi = await getServerApi();
-  const res = await api.get<CheckSessionRequest>("/auth/session", serverApi);
-  return res.data.success;
+export const checkSession = async (externalCookie?: string) => {
+  const cookieString = externalCookie || (await cookies()).toString();
+
+  const res = await api.get<string>("/auth/session", {
+    headers: { Cookie: cookieString },
+  });
+  return res;
 };

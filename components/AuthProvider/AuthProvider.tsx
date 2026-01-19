@@ -1,54 +1,63 @@
 "use client";
 
-import { ReactNode, useMemo } from "react";
-import { usePathname } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState, ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store/authStore";
+import { checkSession, getMe } from "@/lib/api/clientApi";
 
-type Props = { children: ReactNode };
+export default function AuthProvider({ children }: { children: ReactNode }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const setUser = useAuthStore((state) => state.setUser);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-const PRIVATE_PREFIXES = ["/profile", "/notes"];
-const PUBLIC_ONLY_PREFIXES = ["/sign-in", "/sign-up"];
-
-function startsWithAny(path: string, prefixes: string[]) {
-  return prefixes.some((p) => path === p || path.startsWith(p + "/"));
-}
-
-type SessionResponse = {
-  success: boolean;
-  user?: unknown | null;
-};
-
-async function fetchSession(): Promise<SessionResponse> {
-  const res = await fetch("/api/auth/session", {
-    credentials: "include",
-    cache: "no-store",
-  });
-
-  if (res.status === 401 || res.status === 403) {
-    return { success: false, user: null };
-  }
-  if (!res.ok) return { success: false, user: null };
-
-  return res.json();
-}
-
-export default function AuthProvider({ children }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const shouldCheck = useMemo(() => {
-    const isPrivate = startsWithAny(pathname, PRIVATE_PREFIXES);
-    const isPublicOnly = startsWithAny(pathname, PUBLIC_ONLY_PREFIXES);
-    return isPrivate || isPublicOnly;
-  }, [pathname]);
+  useEffect(() => {
+    const isPrivateRoute =
+      pathname.startsWith("/profile") || pathname.startsWith("/notes");
 
-  // только проверяем сессию (для UI), но НЕ редиректим
-  useQuery({
-    queryKey: ["session"],
-    queryFn: fetchSession,
-    retry: false,
-    refetchOnWindowFocus: false,
-    enabled: shouldCheck,
-  });
+    const initAuth = async () => {
+      if (isAuthenticated) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const session = await checkSession();
+        const user = await getMe();
+        if (session && user) {
+          setUser(user);
+        } else {
+          clearAuth();
+          if (isPrivateRoute) router.push("/sign-in");
+        }
+      } catch {
+        clearAuth();
+        if (isPrivateRoute) router.push("/sign-in");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, [setUser, clearAuth, router, pathname, isAuthenticated]);
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <p>Loading session...</p>
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }

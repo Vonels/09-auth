@@ -1,66 +1,72 @@
 "use client";
-
-import { useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store/authStore";
+import { updateMe } from "@/lib/api/clientApi";
 import css from "./EditProfilePage.module.css";
 
-import { getMe, updateMe } from "@/lib/api/clientApi";
-//
 export default function EditProfilePage() {
   const router = useRouter();
-  const qc = useQueryClient();
+  const { user, setUser } = useAuthStore();
 
-  const usernameRef = useRef<HTMLInputElement>(null);
+  const [username, setUsername] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["me"],
-    queryFn: getMe,
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
+  useEffect(() => {
+    if (user?.username) {
+      setUsername(user.username);
+    }
+  }, [user]);
 
-  const updateMutation = useMutation({
-    mutationFn: updateMe,
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ["me"] });
-      router.push("/profile");
-    },
-  });
+  if (!user) {
+    return (
+      <main className={css.mainContent}>
+        <p>Loading user data...</p>
+      </main>
+    );
+  }
 
-  if (isLoading) return <p>Loading...</p>;
-  if (!user) return null;
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!username.trim()) return;
 
-    const username = usernameRef.current?.value.trim() ?? "";
-    if (!username) return;
-
-    updateMutation.mutate({ username });
+    try {
+      setIsSubmitting(true);
+      const updatedUser = await updateMe({ username });
+      setUser(updatedUser);
+      router.push("/profile");
+    } catch (error) {
+      console.error("Failed to update profile", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
+
         <Image
-          src={"https://ac.goit.global/fullstack/react/default-avatar.jpg"}
+          src={user.avatar}
           alt="User Avatar"
           width={120}
           height={120}
           className={css.avatar}
+          priority
         />
-        <form className={css.profileInfo} onSubmit={handleSubmit}>
+
+        <form className={css.profileInfo} onSubmit={handleSave}>
           <div className={css.usernameWrapper}>
             <label htmlFor="username">Username:</label>
             <input
-              ref={usernameRef}
               id="username"
               type="text"
-              defaultValue={user.username ?? ""}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className={css.input}
+              required
             />
           </div>
 
@@ -70,24 +76,18 @@ export default function EditProfilePage() {
             <button
               type="submit"
               className={css.saveButton}
-              disabled={updateMutation.isPending}
+              disabled={isSubmitting}
             >
-              {updateMutation.isPending ? "Saving..." : "Save"}
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
-
             <button
               type="button"
               className={css.cancelButton}
               onClick={() => router.push("/profile")}
-              disabled={updateMutation.isPending}
             >
               Cancel
             </button>
           </div>
-
-          {updateMutation.isError ? (
-            <p className={css.errorText}>Failed to save. Try again.</p>
-          ) : null}
         </form>
       </div>
     </main>
