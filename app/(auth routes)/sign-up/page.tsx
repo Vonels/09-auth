@@ -59,8 +59,6 @@ export default function SignUpPage() {
             Register
           </button>
         </div>
-
-        <p className={css.error}>Error</p>
       </form>
     </main>
   );
