@@ -9,7 +9,7 @@ import NotesClient from "./Notes.client";
 import type { Metadata } from "next";
 
 const APP_NAME = "NoteHub";
-const APP_URL = "https://09-auth-mauve-omega.vercel.app/";
+const APP_URL = "https://09-auth-mauve-omega.vercel.app";
 const OG_IMAGE = "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
 
 type PageProps = {
