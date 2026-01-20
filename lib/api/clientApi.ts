@@ -17,6 +17,12 @@ export type LoginRequest = {
   password: string;
 };
 
+type CheckSessionRequest = {
+  success: boolean;
+  accessToken?: string;
+  refreshToken?: string;
+};
+
 export type UpdateMeRequest = {
   username: string;
 };
@@ -60,9 +66,9 @@ export const login = async (data: LoginRequest) => {
   return res.data;
 };
 
-export const checkSession = async (): Promise<User | null> => {
-  const { data } = await api.get<User | null>("/auth/session");
-  return data || null;
+export const checkSession = async () => {
+  const res = await api.get<CheckSessionRequest>("/auth/session");
+  return res.data.success;
 };
 
 export const getMe = async () => {
