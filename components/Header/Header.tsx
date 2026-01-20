@@ -17,9 +17,11 @@ export default function Header() {
           <li>
             <Link href="/">Home</Link>
           </li>
-          <li>
-            <Link href="/notes/filter/all">Notes</Link>
-          </li>
+          <{isAuthenticated && (
+            <li>
+              <Link href="/notes/filter/all">Notes</Link>
+            </li>
+          )}
 
           {!isAuthenticated && (
             <>
