@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { checkSession, getMe } from "@/lib/api/clientApi";
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
+
   const setUser = useAuthStore((state) => state.setUser);
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -18,31 +19,49 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const isPrivateRoute =
       pathname.startsWith("/profile") || pathname.startsWith("/notes");
 
-    const initAuth = async () => {
-      if (isAuthenticated) {
-        setIsLoading(false);
-        return;
-      }
+    const isAuthPages =
+      pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
 
+    const initAuth = async () => {
       try {
-        const session = await checkSession();
-        const user = await getMe();
-        if (session && user) {
-          setUser(user);
-        } else {
-          clearAuth();
-          if (isPrivateRoute) router.push("/sign-in");
+        // Если уже авторизован в сторе — не дёргаем API.
+        // Если при этом на страницах логина — отправляем в профиль.
+        if (isAuthenticated) {
+          if (isAuthPages) router.replace("/profile");
+          return;
         }
+
+        // checkSession у тебя boolean
+        const ok = await checkSession();
+
+        if (!ok) {
+          clearAuth();
+          if (isPrivateRoute) router.replace("/sign-in");
+          return;
+        }
+
+        // Только если сессия ок — получаем пользователя
+        const user = await getMe();
+
+        if (user) {
+          setUser(user);
+          if (isAuthPages) router.replace("/profile");
+          return;
+        }
+
+        // Сессия "ок", но user не получили -> считаем разлогинен
+        clearAuth();
+        if (isPrivateRoute) router.replace("/sign-in");
       } catch {
         clearAuth();
-        if (isPrivateRoute) router.push("/sign-in");
+        if (isPrivateRoute) router.replace("/sign-in");
       } finally {
         setIsLoading(false);
       }
     };
 
     initAuth();
-  }, [setUser, clearAuth, router, pathname, isAuthenticated]);
+  }, [pathname, router, isAuthenticated, setUser, clearAuth]);
 
   if (isLoading) {
     return (
