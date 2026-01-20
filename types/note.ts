@@ -12,10 +12,3 @@ export interface NoteFormValues {
   content: string;
   tag: string;
 }
-
-export interface FetchNotesParams {
-  search?: string;
-  page?: number;
-  perPage?: number;
-  tag?: string;
-}
