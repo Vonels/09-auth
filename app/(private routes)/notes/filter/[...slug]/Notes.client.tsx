@@ -37,12 +37,12 @@ export default function NotesClient({ activeTag }: { activeTag?: string }) {
             setPage={setCurrentPage}
           />
         )}
-      </header>
-
-      <NoteList notes={data?.notes ?? []} />
+  
       <Link href="/notes/action/create" className={css.createButton}>
         Create note +
       </Link>
+      </header>
+      <NoteList notes={data?.notes ?? []} />
     </div>
   );
 }
