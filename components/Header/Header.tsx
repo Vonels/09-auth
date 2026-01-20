@@ -17,7 +17,7 @@ export default function Header() {
           <li>
             <Link href="/">Home</Link>
           </li>
-          <{isAuthenticated && (
+          {isAuthenticated && (
             <li>
               <Link href="/notes/filter/all">Notes</Link>
             </li>
