@@ -12,3 +12,8 @@ export interface NoteFormValues {
   content: string;
   tag: string;
 }
+
+export interface NoteRes {
+  notes: Note[];
+  totalPages: number;
+}

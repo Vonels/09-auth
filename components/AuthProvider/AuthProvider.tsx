@@ -1,13 +1,12 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { checkSession, getMe } from "@/lib/api/clientApi";
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
-
   const setUser = useAuthStore((state) => state.setUser);
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -19,49 +18,31 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const isPrivateRoute =
       pathname.startsWith("/profile") || pathname.startsWith("/notes");
 
-    const isAuthPages =
-      pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
-
     const initAuth = async () => {
+      if (isAuthenticated) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        // Если уже авторизован в сторе — не дёргаем API.
-        // Если при этом на страницах логина — отправляем в профиль.
-        if (isAuthenticated) {
-          if (isAuthPages) router.replace("/profile");
-          return;
-        }
-
-        // checkSession у тебя boolean
-        const ok = await checkSession();
-
-        if (!ok) {
-          clearAuth();
-          if (isPrivateRoute) router.replace("/sign-in");
-          return;
-        }
-
-        // Только если сессия ок — получаем пользователя
+        const session = await checkSession();
         const user = await getMe();
-
-        if (user) {
+        if (session && user) {
           setUser(user);
-          if (isAuthPages) router.replace("/profile");
-          return;
+        } else {
+          clearAuth();
+          if (isPrivateRoute) router.push("/sign-in");
         }
-
-        // Сессия "ок", но user не получили -> считаем разлогинен
-        clearAuth();
-        if (isPrivateRoute) router.replace("/sign-in");
       } catch {
         clearAuth();
-        if (isPrivateRoute) router.replace("/sign-in");
+        if (isPrivateRoute) router.push("/sign-in");
       } finally {
         setIsLoading(false);
       }
     };
 
     initAuth();
-  }, [pathname, router, isAuthenticated, setUser, clearAuth]);
+  }, [setUser, clearAuth, router, pathname, isAuthenticated]);
 
   if (isLoading) {
     return (

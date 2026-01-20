@@ -1,74 +1,56 @@
+import { Note, NoteFormValues, NoteRes } from "@/types/note";
 import { api } from "./api";
-import type { Note, NoteFormValues } from "@/types/note";
-import type { User } from "@/types/user";
+import { User } from "@/types/user";
 
-interface NoteRes {
-  notes: Note[];
-  totalPages: number;
+export interface AuthCredentials {
+  email: string;
+  password: string;
 }
 
-type RegisterRequest = {
-  email: string;
-  password: string;
-};
-
-export type LoginRequest = {
-  email: string;
-  password: string;
-};
-
-type CheckSessionRequest = {
-  success: boolean;
-  accessToken?: string;
-  refreshToken?: string;
-};
-
-export type UpdateMeRequest = {
-  username: string;
-};
-
-export async function fetchNotes(
-  currentPage: number,
-  query?: string,
+export const fetchNotes = async (
+  page: number,
+  search?: string,
   tag?: string,
-): Promise<NoteRes> {
+) => {
   const res = await api.get<NoteRes>("/notes", {
-    params: { page: currentPage, perPage: 12, search: query, tag: tag },
+    params: { page, perPage: 12, search, tag },
   });
-  return res.data;
-}
-
-export async function createNote(values: NoteFormValues): Promise<Note> {
-  const res = await api.post<Note>("/notes", values);
-
-  return res.data;
-}
-
-export async function deleteNote(id: string): Promise<Note> {
-  const res = await api.delete<Note>("/notes" + `/${id}`);
-
-  return res.data;
-}
-
-export async function fetchNoteById(id: string): Promise<Note> {
-  const res = await api.get<Note>("/notes" + `/${id}`);
-
-  return res.data;
-}
-
-export const register = async (data: RegisterRequest) => {
-  const res = await api.post<User>("/auth/register", data);
+  console.log(res);
   return res.data;
 };
 
-export const login = async (data: LoginRequest) => {
-  const res = await api.post<User>("/auth/login", data);
+export const fetchNoteById = async (id: string) => {
+  const res = await api.get<Note>(`/notes/${id}`);
   return res.data;
+};
+
+export const createNote = async (values: NoteFormValues) => {
+  const res = await api.post<Note>("/notes", values);
+  return res.data;
+};
+
+export const deleteNote = async (id: string) => {
+  const res = await api.delete<Note>(`/notes/${id}`);
+  return res.data;
+};
+
+export const register = async (values: AuthCredentials) => {
+  const res = await api.post<User>("/auth/register", values);
+  return res.data;
+};
+
+export const login = async (values: AuthCredentials) => {
+  const res = await api.post<User>("/auth/login", values);
+  return res.data;
+};
+
+export const logout = async () => {
+  await api.post("/auth/logout");
 };
 
 export const checkSession = async () => {
-  const res = await api.get<CheckSessionRequest>("/auth/session");
-  return res.data.success;
+  const res = await api.get<User | null>("/auth/session");
+  return res.data;
 };
 
 export const getMe = async () => {
@@ -76,11 +58,7 @@ export const getMe = async () => {
   return res.data;
 };
 
-export const logout = async (): Promise<void> => {
-  await api.post("/auth/logout");
-};
-
-export const updateMe = async (data: UpdateMeRequest) => {
-  const res = await api.patch<User>("/users/me", data);
+export const updateMe = async (values: Partial<User>) => {
+  const res = await api.patch<User>("/users/me", values);
   return res.data;
 };
