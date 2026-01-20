@@ -1,34 +1,37 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
-export type NoteDraft = {
+interface NoteDraft {
   title: string;
   content: string;
   tag: string;
-};
+}
 
-export const initialDraft: NoteDraft = {
+interface NoteState {
+  draft: NoteDraft;
+  setDraft: (partialDraft: Partial<NoteDraft>) => void;
+  clearDraft: () => void;
+}
+
+const initialDraft: NoteDraft = {
   title: "",
   content: "",
   tag: "Todo",
 };
 
-type NoteStore = {
-  draft: NoteDraft;
-  setDraft: (note: NoteDraft) => void;
-  clearDraft: () => void;
-};
-
-export const useNoteStore = create<NoteStore>()(
+export const useNoteStore = create<NoteState>()(
   persist(
     (set) => ({
       draft: initialDraft,
-      setDraft: (note) => set({ draft: note }),
+      setDraft: (partialDraft) =>
+        set((state) => ({
+          draft: { ...state.draft, ...partialDraft },
+        })),
       clearDraft: () => set({ draft: initialDraft }),
     }),
     {
-      name: "notehub_draft",
-      partialize: (state) => ({ draft: state.draft }),
-    }
-  )
+      name: "note-draft-storage",
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
 );
