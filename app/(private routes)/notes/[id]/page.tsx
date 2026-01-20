@@ -7,10 +7,6 @@ import { fetchNoteById } from "@/lib/api/serverApi";
 import NoteDetailsClient from "./NoteDetails.client";
 import type { Metadata } from "next";
 
-const APP_NAME = "NoteHub";
-const APP_URL = "https://09-auth-mauve-omega.vercel.app";
-const OG_IMAGE = "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
-
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -20,28 +16,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const note = await fetchNoteById(id);
 
-  const titleText = note?.title || "Нотатка";
-  const descriptionText =
-    note?.content?.slice(0, 140) || `Деталі нотатки у ${APP_NAME}.`;
-
-  const title = `${titleText} | ${APP_NAME}`;
-  const url = `${APP_URL}/notes/${id}`;
-
   return {
-    title,
-    description: descriptionText,
+    title: `${note.title} | NoteHub`,
+    description: note.content.slice(0, 160),
     openGraph: {
-      title,
-      description: descriptionText,
-      url,
+      title: note.title,
+      description: note.content.slice(0, 160),
+      url: `https://08-zustand-six-iota.vercel.app/notes/${id}`,
       images: [
         {
-          url: OG_IMAGE,
-          width: 1200,
-          height: 630,
-          alt: "NoteHub",
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          alt: note.title,
         },
       ],
+      type: "article",
     },
   };
 }

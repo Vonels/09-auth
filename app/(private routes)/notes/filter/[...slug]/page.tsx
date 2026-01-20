@@ -8,36 +8,19 @@ import css from "./NotesPage.module.css";
 import NotesClient from "./Notes.client";
 import type { Metadata } from "next";
 
-const APP_NAME = "NoteHub";
-const APP_URL = "https://09-auth-mauve-omega.vercel.app";
-const OG_IMAGE = "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
-
-type PageProps = {
+type Props = {
   params: Promise<{ slug: string[] }>;
 };
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const slugValue = slug?.[0];
+  const tag = slug?.[0];
+  const isAll = !tag || tag === "all";
 
-  const activeTag = slugValue === "all" || !slugValue ? "all" : slugValue;
-
-  const title =
-    activeTag === "all"
-      ? `Усі нотатки | ${APP_NAME}`
-      : `Нотатки: ${activeTag} | ${APP_NAME}`;
-
-  const description =
-    activeTag === "all"
-      ? `Перегляд усіх нотаток у ${APP_NAME}.`
-      : `Перегляд нотаток у ${APP_NAME} з за тегом: ${activeTag}.`;
-
-  const url =
-    activeTag === "all"
-      ? `${APP_URL}/notes`
-      : `${APP_URL}/notes/filter/${activeTag}`;
+  const title = isAll ? "All Notes | NoteHub" : `${tag} Notes | NoteHub`;
+  const description = isAll
+    ? "Browse all your notes in one place."
+    : `View and manage all notes categorized under ${tag}.`;
 
   return {
     title,
@@ -45,35 +28,32 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url,
+      url: `https://08-zustand-six-iota.vercel.app/notes/filter/${
+        tag || "all"
+      }`,
       images: [
         {
-          url: OG_IMAGE,
-          width: 1200,
-          height: 630,
-          alt: "NoteHub",
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          alt: "NoteHub Preview",
         },
       ],
+      type: "website",
     },
   };
 }
 
-export default async function MainNotesPage({
-  params,
-}: {
-  params: Promise<{ slug: string[] }>;
-}) {
+export default async function MainNotesPage({ params }: Props) {
   const { slug } = await params;
   const slugValue = slug?.[0];
 
   const activeTag = slugValue === "all" || !slugValue ? undefined : slugValue;
 
   const queryClient = new QueryClient();
+
   await queryClient.prefetchQuery({
     queryKey: ["notes", 1, "", activeTag],
     queryFn: () => fetchNotes(1, "", activeTag),
   });
-
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className={css.app}>

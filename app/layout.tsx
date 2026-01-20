@@ -9,28 +9,25 @@ import AuthProvider from "@/components/AuthProvider/AuthProvider";
 const roboto = Roboto({
   weight: ["400", "500", "700"],
   subsets: ["latin", "cyrillic"],
-  display: "swap",
   variable: "--font-roboto",
+  display: "swap",
 });
 
-const APP_NAME = "NoteHub";
-const APP_URL = "https://09-auth-mauve-omega.vercel.app";
-const OG_IMAGE = "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
-//
 export const metadata: Metadata = {
-  title: APP_NAME,
-  description: "NoteHub — сервіс нотаток.",
-
+  title: "NoteHub — Your Personal Note Manager",
+  description:
+    "Organize your thoughts, tasks, and ideas with NoteHub. Simple, fast, and secure note-taking application.",
   openGraph: {
-    title: APP_NAME,
-    description: "NoteHub — сервіс нотаток.",
-    url: APP_URL,
+    title: "NoteHub — Your Personal Note Manager",
+    description: "Organize your thoughts, tasks, and ideas with NoteHub.",
+    url: "https://08-zustand-six-iota.vercel.app/",
+    siteName: "NoteHub",
     images: [
       {
-        url: OG_IMAGE,
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
         width: 1200,
         height: 630,
-        alt: "NoteHub",
+        alt: "NoteHub App Preview",
       },
     ],
     type: "website",
