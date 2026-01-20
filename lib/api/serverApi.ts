@@ -44,11 +44,9 @@ export const getMe = async () => {
   return res.data;
 };
 
-export const checkSession = async (externalCookie?: string) => {
-  const cookieString = externalCookie || (await cookies()).toString();
-
-  const res = await api.get<string>("/auth/session", {
-    headers: { Cookie: cookieString },
+export const checkSession = async (): Promise<AxiosResponse> => {
+  const cookieStore = await cookies();
+  return await api.get("/auth/session", {
+    headers: { Cookie: cookieStore.toString() },
   });
-  return res;
 };
